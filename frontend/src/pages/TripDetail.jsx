@@ -78,8 +78,8 @@ const TripDetail = () => {
             <TripMap stops={trip.stops || []} />
           </div>
         ) : (
-        {/* Stops */}
         <div className="space-y-4">
+          {/* Stops */}
           {trip.stops?.sort((a, b) => a.order_index - b.order_index).map((stop, i) => (
             <motion.div key={stop.stop_id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
               className="warm-card overflow-hidden">
