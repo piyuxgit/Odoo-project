@@ -27,7 +27,12 @@ const CreateTrip = () => {
       if (coverImage) formData.append('cover_image', coverImage);
       const res = await createTripAPI(formData);
       navigate(`/trip/${res.data.trip_id}`);
-    } catch (err) { setError(err.response?.data?.error || 'Failed to create trip'); }
+    } catch (err) {
+      const errorMsg = err.response?.data?.details 
+        ? `${err.response.data.error}: ${err.response.data.details}` 
+        : (err.response?.data?.error || 'Failed to create trip');
+      setError(errorMsg);
+    }
     finally { setLoading(false); }
   };
 

@@ -4,20 +4,21 @@ const prisma = require('../db');
 exports.createTrip = async (req, res) => {
   try {
     const { trip_name, description, start_date, end_date } = req.body;
+    console.log('Attempting to create trip with data:', { trip_name, description, start_date, end_date, user_id: req.user.id });
     const trip = await prisma.trip.create({
       data: {
-        trip_name,
+        trip_name: trip_name || 'My Trip',
         description: description || '',
-        start_date,
-        end_date,
+        start_date: start_date || new Date().toISOString().split('T')[0],
+        end_date: end_date || new Date().toISOString().split('T')[0],
         cover_image: req.file ? `/uploads/${req.file.filename}` : null,
         user_id: req.user.id,
       },
     });
     res.status(201).json(trip);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create trip' });
+    console.error('Trip Creation Error:', error);
+    res.status(500).json({ error: 'Failed to create trip', details: error.message });
   }
 };
 
