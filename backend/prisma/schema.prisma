@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                  String   @id @default(uuid())
+  name                String
+  email               String   @unique
+  password            String
+  profile_photo       String?
+  language_preference String   @default("en")
+  currency_preference String   @default("INR")
+  created_at          DateTime @default(now())
+
+  trips Trip[]
+}
+
+model Destination {
+  city_id          String  @id @default(uuid())
+  city_name        String
+  country          String
+  region           String  @default("")
+  popularity_score Float   @default(0.0)
+  average_cost     Float   @default(0.0)
+  image_url        String?
+
+  stops      Stop[]
+  activities Activity[]
+}
+
+model Trip {
+  trip_id     String   @id @default(uuid())
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  trip_name   String
+  description String?
+  start_date  String
+  end_date    String
+  cover_image String?
+  created_at  DateTime @default(now())
+
+  stops         Stop[]
+  budget        Budget?
+  expenses      Expense[]
+  packing_items PackingItem[]
+  notes         Note[]
+  shared_trip   SharedTrip?
+}
+
+model Stop {
+  stop_id        String       @id @default(uuid())
+  trip_id        String
+  trip           Trip         @relation(fields: [trip_id], references: [trip_id], onDelete: Cascade)
+  city_id        String?
+  city           Destination? @relation(fields: [city_id], references: [city_id])
+  city_name      String       @default("")
+  arrival_date   String
+  departure_date String
+  order_index    Int
+  lat            Float?
+  lng            Float?
+
+  activities TripActivity[]
+  notes      Note[]
+}
+
+model Activity {
+  activity_id    String       @id @default(uuid())
+  city_id        String?
+  city           Destination? @relation(fields: [city_id], references: [city_id])
+  title          String
+  description    String?
+  category       String
+  duration       Int          @default(60)
+  estimated_cost Float        @default(0.0)
+  image_url      String?
+
+  trip_activities TripActivity[]
+}
+
+model TripActivity {
+  trip_activity_id String   @id @default(uuid())
+  stop_id          String
+  stop             Stop     @relation(fields: [stop_id], references: [stop_id], onDelete: Cascade)
+  activity_id      String
+  activity         Activity @relation(fields: [activity_id], references: [activity_id])
+  scheduled_time   String?
+  notes            String?
+}
+
+model Budget {
+  budget_id      String @id @default(uuid())
+  trip_id        String @unique
+  trip           Trip   @relation(fields: [trip_id], references: [trip_id], onDelete: Cascade)
+  transport_est  Float  @default(0.0)
+  stay_est       Float  @default(0.0)
+  food_est       Float  @default(0.0)
+  activities_est Float  @default(0.0)
+}
+
+model Expense {
+  expense_id  String   @id @default(uuid())
+  trip_id     String
+  trip        Trip     @relation(fields: [trip_id], references: [trip_id], onDelete: Cascade)
+  category    String   @default("Other")
+  amount      Float    @default(0.0)
+  description String?
+  date        String
+  created_at  DateTime @default(now())
+}
+
+model PackingItem {
+  item_id       String  @id @default(uuid())
+  trip_id       String
+  trip          Trip    @relation(fields: [trip_id], references: [trip_id], onDelete: Cascade)
+  item_name     String
+  category      String  @default("Other")
+  packed_status Boolean @default(false)
+}
+
+model Note {
+  note_id      String   @id @default(uuid())
+  trip_id      String
+  trip         Trip     @relation(fields: [trip_id], references: [trip_id], onDelete: Cascade)
+  stop_id      String?
+  stop         Stop?    @relation(fields: [stop_id], references: [stop_id])
+  note_content String
+  created_at   DateTime @default(now())
+}
+
+model SharedTrip {
+  share_id        String   @id @default(uuid())
+  trip_id         String   @unique
+  trip            Trip     @relation(fields: [trip_id], references: [trip_id], onDelete: Cascade)
+  public_url_slug String   @unique
+  views           Int      @default(0)
+  created_at      DateTime @default(now())
+}
